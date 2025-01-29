@@ -15,7 +15,6 @@ permissions:
   contents: read
 
 jobs:
-#build
   build:
     name: Build Image Development
     runs-on: ubuntu-latest
@@ -56,8 +55,9 @@ jobs:
 
     - name: End Build
       run: echo "Build Success"
-#pull
+
   node1:
+    needs: [build]  # Add dependency on build job
     name: Pull Image on node1
     runs-on: node1
     steps:
@@ -94,6 +94,7 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$RESULT_IMAGE_TAG   
 
   node2:
+    needs: [build]  # Add dependency on build job
     name: Pull Image on node2
     runs-on: node2
     steps:
@@ -130,6 +131,7 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$RESULT_IMAGE_TAG    
 
   control-plane:
+    needs: [build]  # Add dependency on build job
     name: Pull Image on control-plane
     runs-on: control-plane
     steps:
@@ -165,8 +167,8 @@ jobs:
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$VOTE_IMAGE_TAG
           docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$RESULT_IMAGE_TAG     
 
-#deploy
   deploy:  
+    needs: [node1, node2, control-plane]  # Add dependency on all pull jobs
     name: Deploy Application into docker swarm
     runs-on: control-plane
     steps:
